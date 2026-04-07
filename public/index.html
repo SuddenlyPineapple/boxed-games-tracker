@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 Boxed Games Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0f0f;--card:#1a1a2e;--card2:#16213e;--accent:#e94560;--accent2:#0f3460;--text:#eee;--text2:#aaa;--green:#00c853;--border:#2a2a4a}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent)}
+.container{max-width:1400px;margin:0 auto;padding:1rem}
+header{text-align:center;padding:1.5rem 0;border-bottom:2px solid var(--accent)}
+header h1{font-size:2rem;letter-spacing:2px}
+header p{color:var(--text2);margin-top:.3rem}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:1.5rem 0}
+.stat-card{background:var(--card);border-radius:12px;padding:1.2rem;text-align:center;border:1px solid var(--border)}
+.stat-card .num{font-size:2rem;font-weight:700;color:var(--accent)}
+.stat-card .label{color:var(--text2);font-size:.85rem;margin-top:.3rem}
+
+/* Controls */
+.controls{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.5rem 0;align-items:center}
+.controls input,.controls select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.9rem}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--accent)}
+.controls input[type=text]{flex:1;min-width:200px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;cursor:pointer;font-size:.9rem;font-weight:600;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn-sm{padding:.3rem .7rem;font-size:.8rem;border-radius:6px}
+.btn-green{background:var(--green)}
+.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.btn-danger{background:#c62828}
+
+/* Table */
+.table-wrap{overflow-x:auto;margin-top:1rem}
+table{width:100%;border-collapse:collapse}
+th,td{padding:.7rem .6rem;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem;white-space:nowrap}
+th{background:var(--card2);color:var(--accent);cursor:pointer;user-select:none;position:sticky;top:0}
+th:hover{color:#fff}
+tr:hover{background:var(--card)}
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-xbox360{background:#5dc21e30;color:#5dc21e}
+.badge-xboxone{background:#107c1030;color:#10ac10}
+.badge-ps4{background:#003087cc;color:#fff}
+.badge-owned{background:var(--green);color:#000}
+.badge-wanted{background:#ff980050;color:#ff9800}
+.priority-bar{display:inline-block;width:60px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+.priority-fill{height:100%;border-radius:4px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:100;justify-content:center;align-items:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:16px;padding:2rem;width:90%;max-width:500px;border:1px solid var(--border)}
+.modal h2{margin-bottom:1rem;color:var(--accent)}
+.modal label{display:block;margin-top:.8rem;font-size:.85rem;color:var(--text2)}
+.modal input,.modal select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.5rem;margin-top:.3rem}
+.modal-actions{display:flex;gap:.8rem;margin-top:1.5rem;justify-content:flex-end}
+
+/* Platform breakdown */
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1rem 0}
+.platform-card{background:var(--card);border-radius:12px;padding:1rem;border:1px solid var(--border)}
+.platform-card h3{font-size:1rem;margin-bottom:.5rem}
+.platform-bar{height:6px;background:#333;border-radius:3px;margin-top:.5rem}
+.platform-bar-fill{height:100%;border-radius:3px}
+
+@media(max-width:600px){
+  .controls{flex-direction:column}
+  .controls input[type=text]{min-width:auto;width:100%}
+  th,td{padding:.4rem .3rem;font-size:.75rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🎮 Boxed Games Tracker</h1>
+<p>Physical console game collection manager</p>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="platform-grid" id="platformGrid"></div>
+
+<div class="controls">
+<input type="text" id="search" placeholder="🔍 Search games...">
+<select id="filterPlatform"><option value="">All Platforms</option></select>
+<select id="filterBought"><option value="">All Status</option><option value="true">✅ Owned</option><option value="false">🎯 Wanted</option></select>
+<select id="filterPriority"><option value="">All Priorities</option></select>
+<button class="btn" onclick="openModal()">+ Add Game</button>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th data-sort="name">Name ↕</th>
+<th data-sort="platform">Platform ↕</th>
+<th data-sort="priceAllegro">Allegro ↕</th>
+<th data-sort="priceVinted">Vinted ↕</th>
+<th data-sort="pricePaid">Paid ↕</th>
+<th data-sort="priority">Priority ↕</th>
+<th data-sort="maxPlayers">Players ↕</th>
+<th data-sort="bought">Status ↕</th>
+<th>Actions</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal">
+<div class="modal">
+<h2 id="modalTitle">Add Game</h2>
+<label>Name<input id="f_name" type="text"></label>
+<label>Platform<select id="f_platform"><option>Xbox 360</option><option>Xbox One</option><option>PS4</option></select></label>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem">
+<label>Allegro €<input id="f_priceAllegro" type="number" step="0.01"></label>
+<label>Vinted €<input id="f_priceVinted" type="number" step="0.01"></label>
+<label>Paid €<input id="f_pricePaid" type="number" step="0.01"></label>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+<label>Priority (1-10)<input id="f_priority" type="number" min="1" max="10"></label>
+<label>Max Players<input id="f_maxPlayers" type="number" min="1"></label>
+</div>
+<label>Owned<select id="f_bought"><option value="false">No</option><option value="true">Yes</option></select></label>
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+<button class="btn" id="modalSave" onclick="saveGame()">Save</button>
+</div>
+</div>
+</div>
+
+<script>
+let games=[], editId=null, sortCol='name', sortAsc=true;
+
+async function load(){
+  games=await(await fetch('/api/games')).json();
+  renderStats();renderPlatforms();renderTable();populateFilters();
+}
+
+function renderStats(){
+  const owned=games.filter(g=>g.bought);
+  const spent=owned.reduce((s,g)=>s+(g.pricePaid||0),0);
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-card"><div class="num">${games.length}</div><div class="label">Total Games</div></div>
+    <div class="stat-card"><div class="num">${owned.length}</div><div class="label">Owned</div></div>
+    <div class="stat-card"><div class="num">${games.length-owned.length}</div><div class="label">Wanted</div></div>
+    <div class="stat-card"><div class="num">${spent.toFixed(0)} zł</div><div class="label">Total Spent</div></div>
+  `;
+}
+
+function renderPlatforms(){
+  const platforms={};
+  games.forEach(g=>{if(!platforms[g.platform])platforms[g.platform]={total:0,owned:0};platforms[g.platform].total++;if(g.bought)platforms[g.platform].owned++});
+  const colors={'Xbox 360':'#5dc21e','Xbox One':'#10ac10','PS4':'#003087'};
+  document.getElementById('platformGrid').innerHTML=Object.entries(platforms).map(([p,d])=>`
+    <div class="platform-card">
+      <h3>${p}</h3>
+      <div>${d.owned} owned / ${d.total} total</div>
+      <div class="platform-bar"><div class="platform-bar-fill" style="width:${d.total?d.owned/d.total*100:0}%;background:${colors[p]||'#e94560'}"></div></div>
+    </div>
+  `).join('');
+}
+
+function populateFilters(){
+  const plats=[...new Set(games.map(g=>g.platform))].sort();
+  const sel=document.getElementById('filterPlatform');
+  sel.innerHTML='<option value="">All Platforms</option>'+plats.map(p=>`<option>${p}</option>`).join('');
+  const pris=[...new Set(games.map(g=>g.priority).filter(p=>p!=null))].sort((a,b)=>a-b);
+  const psel=document.getElementById('filterPriority');
+  psel.innerHTML='<option value="">All Priorities</option>'+pris.map(p=>`<option value="${p}">${p}</option>`).join('');
+}
+
+function filtered(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const plat=document.getElementById('filterPlatform').value;
+  const bought=document.getElementById('filterBought').value;
+  const pri=document.getElementById('filterPriority').value;
+  let f=games.filter(g=>{
+    if(q&&!g.name.toLowerCase().includes(q))return false;
+    if(plat&&g.platform!==plat)return false;
+    if(bought!==''&&String(g.bought)!==bought)return false;
+    if(pri!==''&&g.priority!=pri)return false;
+    return true;
+  });
+  f.sort((a,b)=>{
+    let va=a[sortCol],vb=b[sortCol];
+    if(va==null)va=sortAsc?Infinity:-Infinity;
+    if(vb==null)vb=sortAsc?Infinity:-Infinity;
+    if(typeof va==='string')return sortAsc?va.localeCompare(vb):vb.localeCompare(va);
+    return sortAsc?va-vb:vb-va;
+  });
+  return f;
+}
+
+function renderTable(){
+  const f=filtered();
+  document.getElementById('tbody').innerHTML=f.map(g=>{
+    const platClass=g.platform==='Xbox 360'?'badge-xbox360':g.platform==='Xbox One'?'badge-xboxone':'badge-ps4';
+    const priFill=g.priority?`width:${g.priority*10}%;background:hsl(${120-g.priority*12},70%,50%)`:'width:0';
+    return `<tr>
+      <td><strong>${g.name}</strong></td>
+      <td><span class="badge ${platClass}">${g.platform}</span></td>
+      <td>${g.priceAllegro!=null?g.priceAllegro.toFixed(0)+' zł':'—'}</td>
+      <td>${g.priceVinted!=null?g.priceVinted.toFixed(0)+' zł':'—'}</td>
+      <td>${g.pricePaid!=null?g.pricePaid.toFixed(0)+' zł':'—'}</td>
+      <td><div class="priority-bar"><div class="priority-fill" style="${priFill}"></div></div> ${g.priority||'—'}</td>
+      <td>${g.maxPlayers||'—'}</td>
+      <td>${g.bought?'<span class="badge badge-owned">Owned</span>':'<span class="badge badge-wanted">Wanted</span>'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="openModal(${g.id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteGame(${g.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+document.querySelectorAll('th[data-sort]').forEach(th=>{
+  th.onclick=()=>{const c=th.dataset.sort;if(sortCol===c)sortAsc=!sortAsc;else{sortCol=c;sortAsc=true}renderTable()};
+});
+document.getElementById('search').oninput=renderTable;
+document.getElementById('filterPlatform').onchange=renderTable;
+document.getElementById('filterBought').onchange=renderTable;
+document.getElementById('filterPriority').onchange=renderTable;
+
+function openModal(id){
+  editId=id||null;
+  document.getElementById('modalTitle').textContent=id?'Edit Game':'Add Game';
+  if(id){
+    const g=games.find(x=>x.id===id);
+    document.getElementById('f_name').value=g.name;
+    document.getElementById('f_platform').value=g.platform;
+    document.getElementById('f_priceAllegro').value=g.priceAllegro||'';
+    document.getElementById('f_priceVinted').value=g.priceVinted||'';
+    document.getElementById('f_pricePaid').value=g.pricePaid||'';
+    document.getElementById('f_priority').value=g.priority||'';
+    document.getElementById('f_maxPlayers').value=g.maxPlayers||'';
+    document.getElementById('f_bought').value=String(g.bought);
+  }else{
+    ['f_name','f_priceAllegro','f_priceVinted','f_pricePaid','f_priority','f_maxPlayers'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f_bought').value='false';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');editId=null}
+
+async function saveGame(){
+  const data={
+    name:document.getElementById('f_name').value,
+    platform:document.getElementById('f_platform').value,
+    priceAllegro:parseFloat(document.getElementById('f_priceAllegro').value)||null,
+    priceVinted:parseFloat(document.getElementById('f_priceVinted').value)||null,
+    pricePaid:parseFloat(document.getElementById('f_pricePaid').value)||null,
+    priority:parseInt(document.getElementById('f_priority').value)||null,
+    maxPlayers:parseInt(document.getElementById('f_maxPlayers').value)||null,
+    bought:document.getElementById('f_bought').value==='true'
+  };
+  if(!data.name)return alert('Name required');
+  if(editId){
+    await fetch(`/api/games/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }else{
+    await fetch('/api/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }
+  closeModal();load();
+}
+
+async function deleteGame(id){
+  if(!confirm('Delete this game?'))return;
+  await fetch(`/api/games/${id}`,{method:'DELETE'});
+  load();
+}
+
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    container_name: boxed-games-tracker
+    restart: unless-stopped
+    ports:
+      - "8888:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATA_FILE=/app/data/games.json
