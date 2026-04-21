@@ -3,76 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 Boxed Games Tracker</title>
+<title>Boxed Games Tracker</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#e94560">
+<meta name="theme-color" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0f0f0f;--card:#1a1a2e;--card2:#16213e;--accent:#e94560;--accent2:#0f3460;--text:#eee;--text2:#aaa;--green:#00c853;--border:#2a2a4a}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+:root{
+  --bg:#07070d;--bg2:#0c0c16;
+  --glass:rgba(255,255,255,0.03);--glass2:rgba(255,255,255,0.06);--glass3:rgba(255,255,255,0.09);
+  --accent:#a78bfa;--accent2:#7c3aed;--accent-glow:rgba(167,139,250,0.15);
+  --green:#34d399;--green-bg:rgba(52,211,153,0.1);
+  --orange:#fbbf24;--orange-bg:rgba(251,191,36,0.1);
+  --red:#f87171;--red-bg:rgba(248,113,113,0.1);
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --xbox360:#22c55e;--xboxone:#16a34a;--ps4:#6366f1;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:600px;background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.08) 0%,transparent 70%);pointer-events:none;z-index:0}
 a{color:var(--accent)}
-.container{max-width:1400px;margin:0 auto;padding:1rem}
-header{text-align:center;padding:1.5rem 0;border-bottom:2px solid var(--accent)}
-header h1{font-size:2rem;letter-spacing:2px}
-header p{color:var(--text2);margin-top:.3rem}
+.container{max-width:1400px;margin:0 auto;padding:1.5rem;position:relative;z-index:1}
+
+/* Header */
+header{text-align:center;padding:2.5rem 0 2rem;position:relative}
+header h1{font-size:1.75rem;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--text) 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header p{color:var(--text3);font-size:.85rem;margin-top:.5rem;font-weight:400;letter-spacing:0.5px;text-transform:uppercase}
+header::after{content:'';display:block;margin:2rem auto 0;width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);border-radius:1px}
 
 /* Stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:1.5rem 0}
-.stat-card{background:var(--card);border-radius:12px;padding:1.2rem;text-align:center;border:1px solid var(--border)}
-.stat-card .num{font-size:2rem;font-weight:700;color:var(--accent)}
-.stat-card .label{color:var(--text2);font-size:.85rem;margin-top:.3rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin:1.5rem 0}
+.stat-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius);padding:1.25rem;text-align:center;border:1px solid var(--border);transition:var(--transition);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)}
+.stat-card:hover{border-color:var(--border2);background:var(--glass2);transform:translateY(-2px)}
+.stat-card .num{font-size:1.75rem;font-weight:700;background:linear-gradient(135deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-card .label{color:var(--text3);font-size:.75rem;margin-top:.4rem;text-transform:uppercase;letter-spacing:1px;font-weight:500}
 
 /* Controls */
-.controls{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.5rem 0;align-items:center}
-.controls input,.controls select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.9rem}
-.controls input:focus,.controls select:focus{outline:none;border-color:var(--accent)}
-.controls input[type=text]{flex:1;min-width:200px}
-.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;cursor:pointer;font-size:.9rem;font-weight:600;transition:opacity .2s}
-.btn:hover{opacity:.85}
-.btn-sm{padding:.3rem .7rem;font-size:.8rem;border-radius:6px}
-.btn-green{background:var(--green)}
-.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
-.btn-danger{background:#c62828}
+.controls{display:grid;grid-template-columns:1fr auto auto auto auto;gap:.6rem;margin:1.5rem 0;align-items:center}
+.controls input,.controls select{background:var(--glass2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.65rem 1rem;font-size:.85rem;font-family:inherit;width:100%;transition:var(--transition);backdrop-filter:blur(10px)}
+.controls input::placeholder{color:var(--text3)}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent-glow)}
+.controls select{cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.controls select option{background:var(--bg2);color:var(--text)}
+.btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:var(--radius-sm);padding:.65rem 1.4rem;cursor:pointer;font-size:.85rem;font-weight:600;font-family:inherit;transition:var(--transition);white-space:nowrap}
+.btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow)}
+.btn-sm{padding:.35rem .7rem;font-size:.75rem;border-radius:8px}
+.btn-green{background:linear-gradient(135deg,#059669,var(--green))}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+.btn-danger{background:linear-gradient(135deg,#991b1b,var(--red))}
 
 /* Table */
-.table-wrap{overflow-x:auto;margin-top:1rem}
-table{width:100%;border-collapse:collapse}
-th,td{padding:.7rem .6rem;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem;white-space:nowrap}
-th{background:var(--card2);color:var(--accent);cursor:pointer;user-select:none;position:sticky;top:0}
-th:hover{color:#fff}
-tr:hover{background:var(--card)}
-.badge{display:inline-block;padding:.15rem .5rem;border-radius:20px;font-size:.75rem;font-weight:600}
-.badge-xbox360{background:#5dc21e30;color:#5dc21e}
-.badge-xboxone{background:#107c1030;color:#10ac10}
-.badge-ps4{background:#003087cc;color:#fff}
-.badge-owned{background:var(--green);color:#000}
-.badge-wanted{background:#ff980050;color:#ff9800}
-.priority-bar{display:inline-block;width:60px;height:8px;background:#333;border-radius:4px;overflow:hidden}
-.priority-fill{height:100%;border-radius:4px}
+.table-wrap{overflow-x:auto;margin-top:1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th,td{padding:.75rem .7rem;text-align:left;font-size:.8rem;white-space:nowrap}
+th{background:var(--glass2);color:var(--text3);cursor:pointer;user-select:none;position:sticky;top:0;z-index:2;font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:.7rem;border-bottom:1px solid var(--border)}
+th:first-child{position:sticky;left:0;z-index:3;background:var(--bg2)}
+th:hover{color:var(--accent)}
+td{border-bottom:1px solid var(--border)}
+td:first-child{position:sticky;left:0;background:var(--bg);z-index:1;font-weight:500;border-right:1px solid var(--border)}
+tr{transition:var(--transition)}
+tr:hover td{background:var(--glass2)}
+tr:hover td:first-child{background:var(--glass3)}
+tr:last-child td{border-bottom:none}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:.2rem .65rem;border-radius:20px;font-size:.7rem;font-weight:600;letter-spacing:.3px}
+.badge-xbox360{background:rgba(34,197,94,0.12);color:var(--xbox360);border:1px solid rgba(34,197,94,0.2)}
+.badge-xboxone{background:rgba(22,163,74,0.12);color:var(--xboxone);border:1px solid rgba(22,163,74,0.2)}
+.badge-ps4{background:rgba(99,102,241,0.12);color:var(--ps4);border:1px solid rgba(99,102,241,0.2)}
+.badge-owned{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+.badge-wanted{background:var(--orange-bg);color:var(--orange);border:1px solid rgba(251,191,36,0.2)}
+
+/* Priority bar */
+.priority-bar{display:inline-block;width:50px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;vertical-align:middle;margin-right:6px}
+.priority-fill{height:100%;border-radius:2px;transition:width 0.3s ease}
 
 /* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:100;justify-content:center;align-items:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;justify-content:center;align-items:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--card);border-radius:16px;padding:2rem;width:90%;max-width:500px;border:1px solid var(--border)}
-.modal h2{margin-bottom:1rem;color:var(--accent)}
-.modal label{display:block;margin-top:.8rem;font-size:.85rem;color:var(--text2)}
-.modal input,.modal select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.5rem;margin-top:.3rem}
-.modal-actions{display:flex;gap:.8rem;margin-top:1.5rem;justify-content:flex-end}
+.modal{background:var(--bg2);border-radius:var(--radius);padding:2rem;width:90%;max-width:480px;border:1px solid var(--border2);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(167,139,250,0.3),transparent)}
+.modal h2{margin-bottom:1.25rem;font-size:1.1rem;font-weight:600;color:var(--text)}
+.modal label{display:block;margin-top:.75rem;font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.modal input,.modal select{width:100%;background:var(--glass2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.55rem .75rem;margin-top:.35rem;font-family:inherit;font-size:.85rem;transition:var(--transition)}
+.modal input:focus,.modal select:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent-glow)}
+.modal-actions{display:flex;gap:.6rem;margin-top:1.75rem;justify-content:flex-end}
 
 /* Platform breakdown */
-.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1rem 0}
-.platform-card{background:var(--card);border-radius:12px;padding:1rem;border:1px solid var(--border)}
-.platform-card h3{font-size:1rem;margin-bottom:.5rem}
-.platform-bar{height:6px;background:#333;border-radius:3px;margin-top:.5rem}
-.platform-bar-fill{height:100%;border-radius:3px}
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin:1rem 0}
+.platform-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius);padding:1.1rem;border:1px solid var(--border);transition:var(--transition);position:relative;overflow:hidden}
+.platform-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)}
+.platform-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.platform-card h3{font-size:.9rem;margin-bottom:.4rem;font-weight:600}
+.platform-card>div:not(.platform-bar){font-size:.75rem;color:var(--text3)}
+.platform-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:.6rem}
+.platform-bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease}
 
+/* Scrollbar */
+::-webkit-scrollbar{height:6px;width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* Actions cell */
+td:last-child{display:flex;gap:4px;border-right:none}
+
+/* Responsive */
 @media(max-width:600px){
-  .controls{flex-direction:column}
-  .controls input[type=text]{min-width:auto;width:100%}
-  th,td{padding:.4rem .3rem;font-size:.75rem}
+  .container{padding:1rem}
+  header h1{font-size:1.35rem}
+  .controls{grid-template-columns:1fr 1fr;gap:.5rem}
+  .controls input[type=text]{grid-column:1/-1}
+  .controls .btn{grid-column:1/-1}
+  th,td{padding:.5rem .4rem;font-size:.7rem}
+  td:first-child{min-width:120px;max-width:160px;white-space:normal;word-break:break-word}
+  .stat-card{padding:1rem}
+  .stat-card .num{font-size:1.4rem}
+  .modal{padding:1.5rem;width:95%}
+}
+@media(min-width:601px) and (max-width:900px){
+  .controls{grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+  .controls input[type=text]{grid-column:1/-1}
+  .controls .btn{grid-column:3}
 }
 </style>
 </head>
@@ -80,7 +142,7 @@ tr:hover{background:var(--card)}
 <div class="container">
 <header>
 <h1>🎮 Boxed Games Tracker</h1>
-<p>Physical console game collection manager</p>
+<p>Physical console game collection</p>
 </header>
 
 <div class="stats" id="stats"></div>
@@ -88,7 +150,7 @@ tr:hover{background:var(--card)}
 <div class="platform-grid" id="platformGrid"></div>
 
 <div class="controls">
-<input type="text" id="search" placeholder="🔍 Search games...">
+<input type="text" id="search" placeholder="Search games...">
 <select id="filterPlatform"><option value="">All Platforms</option></select>
 <select id="filterBought"><option value="">All Status</option><option value="true">✅ Owned</option><option value="false">🎯 Wanted</option></select>
 <select id="filterPriority"><option value="">All Priorities</option></select>
@@ -119,9 +181,9 @@ tr:hover{background:var(--card)}
 <label>Name<input id="f_name" type="text"></label>
 <label>Platform<select id="f_platform"><option>Xbox 360</option><option>Xbox One</option><option>PS4</option></select></label>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem">
-<label>Allegro €<input id="f_priceAllegro" type="number" step="0.01"></label>
-<label>Vinted €<input id="f_priceVinted" type="number" step="0.01"></label>
-<label>Paid €<input id="f_pricePaid" type="number" step="0.01"></label>
+<label>Allegro<input id="f_priceAllegro" type="number" step="0.01" placeholder="zł"></label>
+<label>Vinted<input id="f_priceVinted" type="number" step="0.01" placeholder="zł"></label>
+<label>Paid<input id="f_pricePaid" type="number" step="0.01" placeholder="zł"></label>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
 <label>Priority (1-10)<input id="f_priority" type="number" min="1" max="10"></label>
@@ -157,12 +219,12 @@ function renderStats(){
 function renderPlatforms(){
   const platforms={};
   games.forEach(g=>{if(!platforms[g.platform])platforms[g.platform]={total:0,owned:0};platforms[g.platform].total++;if(g.bought)platforms[g.platform].owned++});
-  const colors={'Xbox 360':'#5dc21e','Xbox One':'#10ac10','PS4':'#003087'};
+  const colors={'Xbox 360':'#22c55e','Xbox One':'#16a34a','PS4':'#6366f1'};
   document.getElementById('platformGrid').innerHTML=Object.entries(platforms).map(([p,d])=>`
     <div class="platform-card">
       <h3>${p}</h3>
       <div>${d.owned} owned / ${d.total} total</div>
-      <div class="platform-bar"><div class="platform-bar-fill" style="width:${d.total?d.owned/d.total*100:0}%;background:${colors[p]||'#e94560'}"></div></div>
+      <div class="platform-bar"><div class="platform-bar-fill" style="width:${d.total?d.owned/d.total*100:0}%;background:${colors[p]||'var(--accent)'}"></div></div>
     </div>
   `).join('');
 }
@@ -204,13 +266,13 @@ function renderTable(){
     const platClass=g.platform==='Xbox 360'?'badge-xbox360':g.platform==='Xbox One'?'badge-xboxone':'badge-ps4';
     const priFill=g.priority?`width:${g.priority*10}%;background:hsl(${120-g.priority*12},70%,50%)`:'width:0';
     return `<tr>
-      <td><strong>${g.name}</strong></td>
+      <td>${g.name}</td>
       <td><span class="badge ${platClass}">${g.platform}</span></td>
-      <td>${g.priceAllegro!=null?g.priceAllegro.toFixed(0)+' zł':'—'}</td>
-      <td>${g.priceVinted!=null?g.priceVinted.toFixed(0)+' zł':'—'}</td>
-      <td>${g.pricePaid!=null?g.pricePaid.toFixed(0)+' zł':'—'}</td>
-      <td><div class="priority-bar"><div class="priority-fill" style="${priFill}"></div></div> ${g.priority||'—'}</td>
-      <td>${g.maxPlayers||'—'}</td>
+      <td>${g.priceAllegro!=null?g.priceAllegro.toFixed(0)+' zł':'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${g.priceVinted!=null?g.priceVinted.toFixed(0)+' zł':'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${g.pricePaid!=null?'<span style="color:var(--green)">'+g.pricePaid.toFixed(0)+' zł</span>':'<span style="color:var(--text3)">—</span>'}</td>
+      <td><div class="priority-bar"><div class="priority-fill" style="${priFill}"></div></div><span style="color:var(--text2)">${g.priority||'—'}</span></td>
+      <td style="color:var(--text2)">${g.maxPlayers||'—'}</td>
       <td>${g.bought?'<span class="badge badge-owned">Owned</span>':'<span class="badge badge-wanted">Wanted</span>'}</td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="openModal(${g.id})">✏️</button>
