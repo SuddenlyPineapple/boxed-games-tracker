@@ -81,6 +81,7 @@ tr:last-child td{border-bottom:none}
 .badge-xbox360{background:rgba(34,197,94,0.12);color:var(--xbox360);border:1px solid rgba(34,197,94,0.2)}
 .badge-xboxone{background:rgba(22,163,74,0.12);color:var(--xboxone);border:1px solid rgba(22,163,74,0.2)}
 .badge-ps4{background:rgba(99,102,241,0.12);color:var(--ps4);border:1px solid rgba(99,102,241,0.2)}
+.badge-custom{background:rgba(167,139,250,0.12);color:var(--accent);border:1px solid rgba(167,139,250,0.2)}
 .badge-owned{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
 .badge-wanted{background:var(--orange-bg);color:var(--orange);border:1px solid rgba(251,191,36,0.2)}
 
@@ -179,7 +180,13 @@ td:last-child{display:flex;gap:4px;border-right:none}
 <div class="modal">
 <h2 id="modalTitle">Add Game</h2>
 <label>Name<input id="f_name" type="text"></label>
-<label>Platform<select id="f_platform"><option>Xbox 360</option><option>Xbox One</option><option>PS4</option></select></label>
+<label>Platform
+<div style="display:flex;gap:.4rem">
+<select id="f_platform" style="flex:1"></select>
+<input id="f_platform_new" type="text" placeholder="New platform..." style="flex:1;display:none">
+<button type="button" class="btn btn-sm btn-outline" id="f_platform_toggle" onclick="toggleNewPlatform()" style="white-space:nowrap;height:auto">+ New</button>
+</div>
+</label>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem">
 <label>Allegro<input id="f_priceAllegro" type="number" step="0.01" placeholder="zł"></label>
 <label>Vinted<input id="f_priceVinted" type="number" step="0.01" placeholder="zł"></label>
@@ -263,7 +270,8 @@ function filtered(){
 function renderTable(){
   const f=filtered();
   document.getElementById('tbody').innerHTML=f.map(g=>{
-    const platClass=g.platform==='Xbox 360'?'badge-xbox360':g.platform==='Xbox One'?'badge-xboxone':'badge-ps4';
+    const platColors={'Xbox 360':'xbox360','Xbox One':'xboxone','PS4':'ps4'};
+    const platClass=platColors[g.platform]?'badge-'+platColors[g.platform]:'badge-custom';
     const priFill=g.priority?`width:${g.priority*10}%;background:hsl(${120-g.priority*12},70%,50%)`:'width:0';
     return `<tr>
       <td>${g.name}</td>
@@ -290,13 +298,42 @@ document.getElementById('filterPlatform').onchange=renderTable;
 document.getElementById('filterBought').onchange=renderTable;
 document.getElementById('filterPriority').onchange=renderTable;
 
+function getKnownPlatforms(){
+  const defaults=['Xbox 360','Xbox One','PS4'];
+  const fromGames=games.map(g=>g.platform).filter(Boolean);
+  return [...new Set([...defaults,...fromGames])].sort();
+}
+
+function populateModalPlatforms(selected){
+  const sel=document.getElementById('f_platform');
+  const plats=getKnownPlatforms();
+  sel.innerHTML=plats.map(p=>`<option${p===selected?' selected':''}>${p}</option>`).join('');
+}
+
+function toggleNewPlatform(){
+  const sel=document.getElementById('f_platform');
+  const inp=document.getElementById('f_platform_new');
+  const btn=document.getElementById('f_platform_toggle');
+  if(inp.style.display==='none'){
+    inp.style.display='';sel.style.display='none';btn.textContent='Cancel';inp.focus();
+  }else{
+    inp.style.display='none';sel.style.display='';btn.textContent='+ New';inp.value='';
+  }
+}
+
+function getSelectedPlatform(){
+  const inp=document.getElementById('f_platform_new');
+  if(inp.style.display!=='none'&&inp.value.trim())return inp.value.trim();
+  return document.getElementById('f_platform').value;
+}
+
 function openModal(id){
   editId=id||null;
   document.getElementById('modalTitle').textContent=id?'Edit Game':'Add Game';
   if(id){
     const g=games.find(x=>x.id===id);
     document.getElementById('f_name').value=g.name;
-    document.getElementById('f_platform').value=g.platform;
+    populateModalPlatforms(g.platform);
     document.getElementById('f_priceAllegro').value=g.priceAllegro||'';
     document.getElementById('f_priceVinted').value=g.priceVinted||'';
     document.getElementById('f_pricePaid').value=g.pricePaid||'';
@@ -306,6 +343,10 @@ function openModal(id){
   }else{
     ['f_name','f_priceAllegro','f_priceVinted','f_pricePaid','f_priority','f_maxPlayers'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('f_bought').value='false';
+    populateModalPlatforms();
+    document.getElementById('f_platform_new').style.display='none';
+    document.getElementById('f_platform').style.display='';
+    document.getElementById('f_platform_toggle').textContent='+ New';
   }
   document.getElementById('modal').classList.add('open');
 }
@@ -315,7 +356,7 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 async function saveGame(){
   const data={
     name:document.getElementById('f_name').value,
-    platform:document.getElementById('f_platform').value,
+    platform:getSelectedPlatform(),
     priceAllegro:parseFloat(document.getElementById('f_priceAllegro').value)||null,
     priceVinted:parseFloat(document.getElementById('f_priceVinted').value)||null,
     pricePaid:parseFloat(document.getElementById('f_pricePaid').value)||null,
